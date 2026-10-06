@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Radar de licitaciones</title>
+<style>
+:root {
+  --bg: #f5f7f9; --card: #ffffff; --text: #1d2a33; --muted: #5d6b76; --line: #dde3e8;
+  --accent: #0f6e8c; --accent-soft: #e2f1f6;
+  --a: #1b7f4c; --a-soft: #e1f3e9; --b: #9a6a00; --b-soft: #fbf0d6; --c: #6b7680; --c-soft: #eceff2;
+  --new: #b4235a; --new-soft: #fbe4ed; --warn: #b4461c;
+  --ok: #1b7f4c; --no: #b4235a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11181d; --card: #1a2329; --text: #e3e9ed; --muted: #9aa8b2; --line: #2c3840;
+    --accent: #5cb8d6; --accent-soft: #173341;
+    --a: #6fd09c; --a-soft: #183528; --b: #e5b54a; --b-soft: #3a2f14; --c: #a5b0b8; --c-soft: #262f35;
+    --new: #f07aa6; --new-soft: #3e1a29; --warn: #f0905f; --ok: #6fd09c; --no: #f07aa6;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; padding-bottom: 80px; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+header { padding: 24px 0 8px; }
+h1 { font-size: 22px; margin: 0 0 4px; }
+.sub { color: var(--muted); font-size: 14px; }
+.resumen { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0 4px; }
+.pill { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: 13px; }
+.pill b { font-variant-numeric: tabular-nums; }
+.filtros { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 10px 0; border-bottom: 1px solid var(--line);
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 8px; }
+.filtros input[type=search], .filtros select { width: 100%; padding: 8px 10px; border: 1px solid var(--line);
+  border-radius: 8px; background: var(--card); color: var(--text); font: inherit; font-size: 14px; }
+.fila2 { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: 14px; }
+.chip { border: 1px solid var(--line); background: var(--card); color: var(--text); border-radius: 999px;
+  padding: 4px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+.chip[aria-pressed=true] { background: var(--accent); border-color: var(--accent); color: #fff; }
+label.chk { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+.contador { color: var(--muted); margin-left: auto; }
+.lista { display: grid; gap: 10px; margin-top: 12px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+.nivel { font-weight: 700; border-radius: 6px; padding: 1px 8px; }
+.nivel.A { color: var(--a); background: var(--a-soft); } .nivel.B { color: var(--b); background: var(--b-soft); }
+.nivel.C { color: var(--c); background: var(--c-soft); }
+.nueva { color: var(--new); background: var(--new-soft); border-radius: 6px; padding: 1px 8px; font-weight: 600; }
+.codigo { color: var(--accent); text-decoration: none; font-weight: 600; }
+.codigo:hover { text-decoration: underline; }
+.tipo { color: var(--muted); }
+.nombre { font-size: 16px; font-weight: 600; margin: 6px 0 2px; }
+.donde { color: var(--muted); font-size: 14px; }
+.datos { display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 8px 0 0; font-size: 14px; }
+.datos span b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.urgente { color: var(--warn); }
+.cerrada { opacity: .6; }
+.cats { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.cat { font-size: 12px; background: var(--accent-soft); color: var(--accent); border-radius: 6px; padding: 1px 8px; }
+.cat.pen { background: var(--c-soft); color: var(--c); }
+details { margin-top: 8px; font-size: 14px; color: var(--muted); }
+summary { cursor: pointer; }
+.fb { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
+.fb button { border: 1px solid var(--line); background: var(--card); color: var(--text); border-radius: 8px;
+  padding: 5px 12px; font: inherit; font-size: 14px; cursor: pointer; }
+.fb button.si[aria-pressed=true] { background: var(--ok); border-color: var(--ok); color: #fff; }
+.fb button.no[aria-pressed=true] { background: var(--no); border-color: var(--no); color: #fff; }
+.fb input { flex: 1; min-width: 180px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--card); color: var(--text); font: inherit; font-size: 14px; }
+.barra { position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+  padding: 10px 0; z-index: 10; }
+.barra .wrap { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 14px; }
+.barra a, .barra button { border-radius: 8px; padding: 7px 14px; font: inherit; font-size: 14px; cursor: pointer; text-decoration: none; }
+.enviar { background: var(--accent); color: #fff; border: 1px solid var(--accent); }
+.copiar { background: var(--card); color: var(--text); border: 1px solid var(--line); }
+.vacio { text-align: center; color: var(--muted); padding: 40px 0; }
+.nota { color: var(--muted); font-size: 13px; margin: 18px 0; }
+@media (max-width: 720px) {
+  .filtros { grid-template-columns: 1fr 1fr; position: static; }
+  .filtros .busca { grid-column: 1 / -1; }
+  .contador { margin-left: 0; width: 100%; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 id="titulo"></h1>
+    <div class="sub" id="sub"></div>
+    <div class="resumen" id="resumen"></div>
+  </header>
+
+  <div class="filtros">
+    <input class="busca" type="search" id="q" placeholder="Buscar comprador, comuna, código o palabra…" aria-label="Buscar">
+    <select id="region" aria-label="Región"><option value="">Todas las regiones</option></select>
+    <select id="grupo" aria-label="Tipo"><option value="">Todos los tipos</option></select>
+    <select id="plazo" aria-label="Cierre">
+      <option value="">Cualquier cierre</option>
+      <option value="7">Cierra en 7 días o menos</option>
+      <option value="14">Cierra en 14 días o menos</option>
+      <option value="30">Cierra en 30 días o menos</option>
+    </select>
+    <div class="fila2">
+      <span>Nivel:</span>
+      <button class="chip" data-nivel="A" aria-pressed="true">A</button>
+      <button class="chip" data-nivel="B" aria-pressed="true">B</button>
+      <button class="chip" data-nivel="C" aria-pressed="false">C</button>
+      <label class="chk"><input type="checkbox" id="nuevas"> Solo nuevas</label>
+      <label class="chk"><input type="checkbox" id="sinfb"> Sin responder</label>
+      <select id="orden" aria-label="Orden" style="width:auto">
+        <option value="cierre">Ordenar por cierre</option>
+        <option value="nivel">Ordenar por nivel</option>
+        <option value="monto">Ordenar por monto</option>
+        <option value="region">Ordenar por región</option>
+      </select>
+      <span class="contador" id="contador"></span>
+    </div>
+  </div>
+
+  <div class="lista" id="lista"></div>
+
+  <p class="nota">Nivel A: el nombre calza con el negocio central (REAS, peligrosos, especiales). B: calza en parte.
+    C: residuos en general o temas que no son el foco. El radar lee el nombre y la ficha pública de cada licitación,
+    no las bases: requisitos, visitas a terreno y garantías hay que verlos en la ficha. "Reservado" = el monto está
+    solo en las bases. Tus respuestas quedan guardadas en este navegador hasta que las envíes.</p>
+</div>
+
+<div class="barra">
+  <div class="wrap">
+    <span id="fbcuenta"></span>
+    <a class="enviar" id="enviar" href="#">Enviar respuestas a Felipe</a>
+    <button class="copiar" id="copiar" type="button">Copiar respuestas</button>
+  </div>
+</div>
+
+<script>
+const DATOS = [{"region": "Metropolitana", "nivel": "A", "puntos": 7, "codigo": "1736-109-L126", "nombre": "Servicio de retiro, transporte y disposición final de residuos peligrosos y apoyo en RETC-SIDREP", "similar_a": "peligrosos, residuos, gestión, cadena de retiro", "comuna": "El Bosque", "organismo": "I MUNICIPALIDAD DE LA COMUNA DE EL BOSQUE", "tipo": "L1", "monto_estimado": 2250000.0, "cierre": "2026-10-07T15:30:00", "fin_preguntas": "2026-10-02T15:30:00", "descripcion": "La Municipalidad de El Bosque requiere contratar el servicio de retiro, transporte y disposición final de residuos peligrosos, incluyendo apoyo técnico en RETC y SIDREP, conforme a las Especificaciones Técnicas.", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=1736-109-L126", "vial": false, "nueva": false}, {"region": "Metropolitana", "nivel": "A", "puntos": 7, "codigo": "1057499-50-LR26", "nombre": "Servicio REAS Hospital San Luis de Buin Paine", "similar_a": "REAS / clínicos, residuos, gestión, cadena de retiro", "comuna": "San Miguel", "organismo": "SERVICIO DE SALUD SUR UNIDAD HOSPITALARI", "tipo": "LR", "monto_estimado": null, "cierre": "2026-10-22T09:00:00", "fin_preguntas": "2026-10-06T15:00:00", "descripcion": "La presente licitación tiene como objetivo el contratar los servicios de RETIRO, TRANSPORTE Y DISPOSICIÓN FINAL DE DESECHOS HOSPITALARIOS DEL HOSPITAL SAN LUIS DE BUIN-PAINE para el Nuevo Hospital San Luis de Buin – Paine, por un periodo de veinticuatro 24 meses, cumpliendo con las condiciones estab", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=1057499-50-LR26", "vial": false, "nueva": false}, {"region": "Metropolitana", "nivel": "A", "puntos": 6, "codigo": "1549-96-LR26", "nombre": "RETIRO TRANSPORTE Y DISPOSICIÓN FINAL DE RESÍDUOS", "similar_a": "residuos, gestión, cadena de retiro", "comuna": "Independencia", "organismo": "SERVICIO DE SALUD METROPOLITANA NORTE HOSPITAL SAN JOSE", "tipo": "LR", "monto_estimado": 581000000.0, "cierre": "2026-11-03T15:00:00", "fin_preguntas": "2026-10-09T15:00:00", "descripcion": "Que, de acuerdo con lo establecido en la Resolución Exenta N° 443, de fecha 26 de enero de 2026, que aprueba Plan Anual de Compras y Contrataciones año 2026 para el Complejo Hospitalario San José, se requiere SERVICIO DE RETIRO, TRANSPORTE Y DISPOSICIÓN FINAL DE RESIDUOS ASIMILABLES A DOMICILIARIOS ", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=1549-96-LR26", "vial": false, "nueva": false}, {"region": "Metropolitana", "nivel": "B", "puntos": 4, "codigo": "591-27-LE26", "nombre": "SERV. DE RETIRO DE RESIDUOS RECICLABLES - FONASA", "similar_a": "residuos, gestión", "comuna": "", "organismo": "FONDO NACIONAL DE SALUD", "tipo": "LE", "monto_estimado": 30000000.0, "cierre": "2026-09-30T16:00:00", "fin_preguntas": "2026-09-21T19:00:00", "descripcion": "Fonasa requiere adquirir el servicio de retiro de material reciclado desde los puntos o sistemas de reciclaje de distintas dependencias del Fondo Nacional de Salud del Nivel Central, que corresponde a la Región Metropolitana y la Región de O´Higgins, en el marco del Programa de Gestión Ambiental de ", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=591-27-LE26", "vial": false, "nueva": false}, {"region": "Metropolitana", "nivel": "B", "puntos": 3, "codigo": "612-29-LR26", "nombre": "Mantención y servicios de incineradores SAG", "similar_a": "gestión, cadena de retiro", "comuna": "Santiago", "organismo": "SERVICIO AGRICOLA Y GANADERO", "tipo": "LR", "monto_estimado": null, "cierre": "2026-10-08T20:00:00", "fin_preguntas": "2026-09-21T20:00:00", "descripcion": "Contratar un suministro por 36 meses para la prestación de servicios de mantención, capacitación, servicios adicionales y suministro de accesorios para los incineradores de propiedad del SAG o entregados en comodato.", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=612-29-LR26", "vial": false, "nueva": false}, {"region": "Metropolitana", "nivel": "B", "puntos": 3, "codigo": "528208-45-LP26", "nombre": "ARRIENDO TRANSITORIO DE MAQUINARIAS PARA EL TRATAMIENTO Y TRANSPORTE DE RESIDUOS PARA LA MUNICIPALIDAD DE CERRO NAVIA", "similar_a": "residuos, gestión", "comuna": "Cerro Navia", "organismo": "I.MUNICIPALIDAD DE CERRO NAVIA", "tipo": "LP", "monto_estimado": null, "cierre": "2026-10-15T14:00:00", "fin_preguntas": "2026-10-01T09:00:00", "descripcion": "ARRIENDO TRANSITORIO DE MAQUINARIAS PARA EL TRATAMIENTO Y TRANSPORTE DE RESIDUOS PARA LA MUNICIPALIDAD DE CERRO  NAVIA", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=528208-45-LP26", "vial": false, "nueva": false}, {"region": "Metropolitana", "nivel": "C", "puntos": 2, "codigo": "2403-69-LR26", "nombre": "Retiro y Disposición final de Residuos Voluminosos", "similar_a": "residuos, gestión, cadena de retiro", "comuna": "Peñalolén", "organismo": "I MUNICIPALIDAD DE PENALOLEN", "tipo": "LR", "monto_estimado": null, "cierre": "2026-10-02T15:30:00", "fin_preguntas": "2026-09-11T15:30:00", "descripcion": "Ejecutar la recolección de residuos voluminosos y operativos de retiro de\r escombros sectorizados en todo el territorio comunal calles, avenidas,\r pasajes, bienes nacionales de uso público, terrenos municipales, etc.,\r dispuestos en la vía pública, el transporte y disposición final, como\r distintos ", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=2403-69-LR26", "vial": true, "nueva": false}, {"region": "Metropolitana", "nivel": "C", "puntos": -1, "codigo": "2251-15-LE26", "nombre": "Servicio de Reciclaje de residuos para la ETA", "similar_a": "residuos", "comuna": "Ñuñoa", "organismo": "DIRECCION GENERAL DE AERONAUTICA CIVIL", "tipo": "LE", "monto_estimado": 10000000.0, "cierre": "2026-10-09T15:30:00", "fin_preguntas": "2026-10-02T15:00:00", "descripcion": "La necesidad de la Escuela Técnica Aeronáutica de contratar el servicio de reciclaje de residuos para las instalaciones de San Pablo y Quinta Normal Para mas detalles de lo requerido, favor de revisar Bases de Licitación, Bases Administrativas, Bases Técnicas, Pauta de Evaluación, y demás anexos apr", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=2251-15-LE26", "vial": true, "nueva": false}, {"region": "Biobío", "nivel": "A", "puntos": 7, "codigo": "1057544-327-LR26", "nombre": "CONTRATACIÓN DE SERVICIOS DE RETIRO TRANSPORTE TRATAMIENTO Y DISPOSICIÓN FINAL DE RESIDUOS HOSPITALARIOS PARA EL HOSPITAL LAS HIGUERAS DE TALCAHUANO", "similar_a": "REAS / clínicos, residuos, gestión, cadena de retiro", "comuna": "Talcahuano", "organismo": "SERVICIO DE SALUD DE TALCAHUANO HOSPITAL", "tipo": "LR", "monto_estimado": 690000000.0, "cierre": "2026-10-28T15:30:00", "fin_preguntas": "2026-10-12T16:00:00", "descripcion": "Se requieren servicios de retiro, transporte, tratamiento y disposición final de residuos hospitalarios, provenientes de los distintos centros de costos del Hospital Las Higueras, los que deberán prestarse de acuerdo a lo dispuesto en las normas nacionales e internacionales respectivas, evitando en ", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=1057544-327-LR26", "vial": false, "nueva": false}, {"region": "Biobío", "nivel": "C", "puntos": 2, "codigo": "4858-61-LE26", "nombre": "INFRAESTRUCTURA SANITARIA Y GESTIÓN DE RESIDUOS", "similar_a": "residuos", "comuna": "Tirúa", "organismo": "I MUNICIPALIDAD DE TIRUA", "tipo": "LE", "monto_estimado": null, "cierre": "2026-10-05T15:00:00", "fin_preguntas": "2026-09-24T18:38:00", "descripcion": "La presente Base Administrativa Especial, en adelante “BAE”, Especificaciones Técnicas, Planos, Antecedentes Técnicos adjuntos y Aclaraciones complementan las Bases Reglamentarias para Contratos de ejecución de Obras a suma Alzada que celebre la Municipalidad de Tirúa y que para este caso están dest", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=4858-61-LE26", "vial": false, "nueva": false}, {"region": "Maule", "nivel": "A", "puntos": 7, "codigo": "1462-31-LE26", "nombre": "ADQUISICION DE SERVICIO DE RETIRO DE REAS", "similar_a": "REAS / clínicos, residuos, gestión, cadena de retiro", "comuna": "Hualañé", "organismo": "SERVICIO DE SALUD DEL MAULE HOSPITAL DE HUALANE", "tipo": "LE", "monto_estimado": 25000000.0, "cierre": "2026-09-30T15:00:00", "fin_preguntas": "2026-09-15T19:00:00", "descripcion": "Adquirir la compra de servicio para el retiro, tratamiento y disposición final de los residuos generados durante la atención de salud en los usuarios que consultan en el Hospital de Hualañé, acorde a la normativa legal vigente", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=1462-31-LE26", "vial": false, "nueva": false}, {"region": "Maule", "nivel": "B", "puntos": 3, "codigo": "5056-112-LP26", "nombre": "COMPRA DE SERVICIOS EXTERNOS INTEGRALES PARA EL RETIRO TRANSPORTE PROCESAMIENTO E INFORME ANATOMOPATOLÓGICO DE BIOPSIAS DEL HOSPITAL REGIONAL DE TALCA", "similar_a": "gestión, cadena de retiro", "comuna": "Talca", "organismo": "SERVICIO DE SALUD DEL MAULE HOSPITAL DE TALCA", "tipo": "LP", "monto_estimado": null, "cierre": "2026-10-05T15:01:00", "fin_preguntas": "2026-09-17T17:30:00", "descripcion": "El objetivo de la presente licitación, es invitar a través de www.mercadopublico.cl a todos los proveedores del rubro a participar de la COMPRA DE SERVICIOS EXTERNOS INTEGRALES PARA EL RETIRO, TRANSPORTE, PROCESAMIENTO E INFORME ANATOMOPATOLÓGICO DE BIOPSIAS DEL HOSPITAL REGIONAL DE TALCA y bajo las", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=5056-112-LP26", "vial": false, "nueva": false}, {"region": "Maule", "nivel": "C", "puntos": 1, "codigo": "4511-54-LE26", "nombre": "CONSTRUCCIÓN MURO PERIMETRAL ESTADIO MUNICIPAL DE RETIRO", "similar_a": "gestión", "comuna": "Retiro", "organismo": "ILUSTRE MUNICIPALIDAD DE RETIRO", "tipo": "LE", "monto_estimado": 27176348.0, "cierre": "2026-09-30T15:01:00", "fin_preguntas": "2026-09-21T17:00:00", "descripcion": "La lustre Municipalidad de Retiro, en adelante la “Municipalidad”, llama a licitación pública para realizar la obra, construcción muro perimetral Estadio Municipal de Retiro, todo conforme a las exigencias de las presentes Bases Administrativas, Especificaciones Técnicas y Planos del proyecto, Presu", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=4511-54-LE26", "vial": false, "nueva": false}, {"region": "Maule", "nivel": "C", "puntos": 1, "codigo": "3759-56-LP26", "nombre": "OBRA CONSTRUCCIÓN PLANTA TRATAMIENTO LAS VERTIENTE", "similar_a": "gestión", "comuna": "Yerbas Buenas", "organismo": "Ilustre Municipalidad de Yerbas Buenas", "tipo": "LP", "monto_estimado": null, "cierre": "2026-10-13T15:01:00", "fin_preguntas": "2026-10-01T23:00:00", "descripcion": "OBRA CONSTRUCCIÓN PLANTA TRATAMIENTO LAS VERTIENTES.", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=3759-56-LP26", "vial": false, "nueva": false}, {"region": "Maule", "nivel": "C", "puntos": 1, "codigo": "4511-56-LP26", "nombre": "“Construcción Sistema de Alumbrado Peatonal Copihue Retiro”", "similar_a": "gestión", "comuna": "Retiro", "organismo": "ILUSTRE MUNICIPALIDAD DE RETIRO", "tipo": "LP", "monto_estimado": 179620000.0, "cierre": "2026-10-29T15:01:00", "fin_preguntas": "2026-10-08T17:00:00", "descripcion": "La Ilustre Municipalidad de Retiro, en adelante la “Municipalidad”, llama a licitación pública la instalación eléctrica, montaje, conexión y pruebas de elementos para dejar en operación el sistema eléctrico del proyecto de construcción sistema de alumbrado público peatonal para Copihue. El proyecto ", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=4511-56-LP26", "vial": false, "nueva": false}, {"region": "La Araucanía", "nivel": "B", "puntos": 4, "codigo": "1175-72-LP26", "nombre": "78.26 SERVICIO DE DESTRUCCIÓN POR INCINERACIÓN DE SUSTANCIAS LEY 20.000", "similar_a": "gestión, cadena de retiro", "comuna": "", "organismo": "SERVICIO DE SALUD ARAUCANIA SUR", "tipo": "LP", "monto_estimado": null, "cierre": "2026-09-30T15:30:00", "fin_preguntas": "2026-09-15T10:00:00", "descripcion": "Se requiere contratar el servicio de destrucción mediante el método de incineración de la totalidad de las sustancias ilícitas incautadas por las unidades policiales, que hayan sido recepcionadas y se encuentren bajo custodia en el Servicio de Salud Araucanía Sur, en cualquiera de en sus presentacio", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=1175-72-LP26", "vial": false, "nueva": false}, {"region": "La Araucanía", "nivel": "B", "puntos": 4, "codigo": "2055-12-LE26", "nombre": "Provisión e instalación de bodega Respel", "similar_a": "peligrosos", "comuna": "Freire", "organismo": "DIRECCION GENERAL DE AERONAUTICA CIVIL", "tipo": "LE", "monto_estimado": 8000000.0, "cierre": "2026-10-08T12:00:00", "fin_preguntas": "2026-10-02T15:00:00", "descripcion": "Provisión e instalación de bodega Respel en el Aeródromo La Araucanía, según bases y documentos adjuntos", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=2055-12-LE26", "vial": false, "nueva": false}, {"region": "Los Ríos", "nivel": "A", "puntos": 6, "codigo": "1057547-404-LP26", "nombre": "SERV. RETIRO TRANSPORTE Y DISPOSICIÓN FINAl", "similar_a": "residuos, gestión, cadena de retiro", "comuna": "Valdivia", "organismo": "SERVICIO DE SALUD VALDIVIA HOSPITAL BASE", "tipo": "LP", "monto_estimado": 257000000.0, "cierre": "2026-10-13T19:00:00", "fin_preguntas": "2026-10-02T09:00:00", "descripcion": "CONVENIO DE SERVICIOS DE RETIRO,TRANSPORTE Y DISPOSICION FINAL DE RESIDUOS SOLIDOS ASIMILABLES A DOMICILIARIOS EN EL HOSPITAL BASE VALDIVIA", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=1057547-404-LP26", "vial": false, "nueva": false}, {"region": "Los Lagos", "nivel": "A", "puntos": 7, "codigo": "3046-21-E226", "nombre": "DL-27 SERVICIO DE RETIRO TRASPORTE TRATAMIENTO Y", "similar_a": "peligrosos, residuos, gestión, cadena de retiro", "comuna": "Puerto Montt", "organismo": "FUERZA AEREA DE CHILE COMANDO LOGISTICO", "tipo": "E2", "monto_estimado": null, "cierre": "2026-09-30T15:00:00", "fin_preguntas": "2026-09-21T15:40:00", "descripcion": "SERVICIO DE RETIRO, TRASPORTE, TRATAMIENTO Y\r DISPOSICION FINAL DE RESIDUOS PELIGROSO SOLIDOS Y\r LIQUIDO PARA LA BASE AÉREA EL TEPUAL PUERTO MONTT Y\r BASE AÉREA MAQUEHUE TEMUCO", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=3046-21-E226", "vial": false, "nueva": false}, {"region": "Los Lagos", "nivel": "C", "puntos": 2, "codigo": "2660-75-LP26", "nombre": "Programa separación y valorización de residuos", "similar_a": "residuos", "comuna": "Ancud", "organismo": "I MUNICIPALIDAD DE ANCUD", "tipo": "LP", "monto_estimado": null, "cierre": "2026-10-08T12:00:00", "fin_preguntas": "2026-09-23T15:00:00", "descripcion": "Programa separación y valorización de residuos, comuna de Ancud", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=2660-75-LP26", "vial": false, "nueva": false}, {"region": "Coquimbo", "nivel": "A", "puntos": 7, "codigo": "4295-73-LP26", "nombre": "REAS SERVICIO DE RETIRO TRANSPORTE TRATAMIENTO Y DISPOSICIÓN FINAL DE LOS RESIDUOS DE ESTABLECIMIENTOS DE ATENCIÓN DE SALUD", "similar_a": "REAS / clínicos, residuos, gestión, cadena de retiro", "comuna": "La Serena", "organismo": "ILUSTRE MUNICIPALIDAD DE LA SERENA", "tipo": "LP", "monto_estimado": null, "cierre": "2026-10-06T12:00:00", "fin_preguntas": "2026-09-22T15:30:00", "descripcion": "El objeto de la contratación es asegurar la continuidad operativa de los establecimientos de Atención Primaria de Salud, resguardar condiciones sanitarias adecuadas y dar cumplimiento a la normativa vigente, en particular el Decreto Supremo N° 6, de 2009 del Ministerio de Salud y el Decreto Supremo ", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=4295-73-LP26", "vial": false, "nueva": false}, {"region": "Tarapacá", "nivel": "B", "puntos": 4, "codigo": "1417913-23-LR26", "nombre": "SERVICIO DE ASEO Y RETIRO DE RESIDUOS PARA LOS EST", "similar_a": "residuos, gestión", "comuna": "Iquique", "organismo": "CORP MUNICIPAL DE DESARROLLO SOCIAL DE IQUIQUE", "tipo": "LR", "monto_estimado": null, "cierre": "2026-10-23T15:00:00", "fin_preguntas": "2026-10-13T15:00:00", "descripcion": "SERVICIO DE ASEO Y RETIRO DE RESIDUOS PARA LOS ESTABLECIMIENTOS DE SALUD DEPENDIENTES DE CORMUDESI POR 24 MESES", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=1417913-23-LR26", "vial": false, "nueva": false}, {"region": "Tarapacá", "nivel": "B", "puntos": 3, "codigo": "5358-15-LR26", "nombre": "SERVICIO DE ASEO FUMIGACIÓN RETIRO DE RESIDUOS Y MANTENIMIENTO DE AREAS VERDES UTA IQUIQUE", "similar_a": "residuos, gestión", "comuna": "Arica", "organismo": "UNIVERSIDAD DE TARAPACA", "tipo": "LR", "monto_estimado": null, "cierre": "2026-10-30T15:01:00", "fin_preguntas": "2026-10-10T16:00:00", "descripcion": "La Universidad de Tarapacá requiere la contratación del suministro de servicios de aseo, fumigación, retiro de residuos y mantención de áreas verdes, para todas sus dependencias en la ciudad de Iquique, con el objeto de contar con los espacios en correcto estado de aseo, tanto para aulas, laboratori", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=5358-15-LR26", "vial": false, "nueva": false}, {"region": "Arica y Parinacota", "nivel": "A", "puntos": 7, "codigo": "2369-75-LR26", "nombre": "PP 72 Retiro - traslado REAS y lavado contenedores", "similar_a": "REAS / clínicos, insumos, gestión, cadena de retiro", "comuna": "Arica", "organismo": "I MUNICIPALIDAD DE ARICA", "tipo": "LR", "monto_estimado": null, "cierre": "2026-10-01T12:00:00", "fin_preguntas": "2026-09-17T12:00:00", "descripcion": "La Municipalidad de Arica requiere contratar los servicios de retiro y traslado de REAS, y lvado de contenedores de los establecimientos de salud municipal.", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=2369-75-LR26", "vial": false, "nueva": false}, {"region": "Arica y Parinacota", "nivel": "A", "puntos": 7, "codigo": "1075963-414-LE26", "nombre": "ADQUISICIÓN DE BOLSAS DE RESIDUOS ESPECIALES AMARILLAS DISTINTOS TAMAÑOS", "similar_a": "especiales, residuos, insumos", "comuna": "", "organismo": "SERVICIO DE SALUD ARICA HOSP DR JUAN NOE CREVANI", "tipo": "LE", "monto_estimado": null, "cierre": "2026-10-08T17:30:00", "fin_preguntas": "2026-10-01T12:00:00", "descripcion": "ADQUISICIÓN DE BOLSAS DE RESIDUOS ESPECIALES AMARILLAS, DISTINTOS TAMAÑOS.\r SE DEBEN ADJUNTAR TODOS LOS ANEXOS CON SUS RESPECTIVAS FIRMAS DEL REPRESENTANTE LEGAL. SEGÚN LO INDICADO EN BASES ADMINISTRATIVA ART N°12: DE LA PRESENTACIÓN DE LA PROPUESTA.", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=1075963-414-LE26", "vial": false, "nueva": false}, {"region": "Arica y Parinacota", "nivel": "A", "puntos": 7, "codigo": "3348-4-LE26", "nombre": "Contratación del Servicio de Retiro Transporte y Eliminación de Residuos Especiales y Peligros para el CCM Arica.", "similar_a": "peligrosos, especiales, residuos, gestión, cadena de retiro", "comuna": "Arica", "organismo": "DIVISION LOGISTICA DEL EJERCITO", "tipo": "LE", "monto_estimado": 17740000.0, "cierre": "2026-10-14T13:19:00", "fin_preguntas": "2026-10-01T19:45:00", "descripcion": "Llama a Licitación Pública, aprueba bases administrativas, técnicas, y designa comisión evaluadora para la Contratación del Servicio de Retiro, Transporte y Eliminación de Residuos Especiales y Peligros para el CCM \"Arica\".\r \r ", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=3348-4-LE26", "vial": false, "nueva": false}, {"region": "Arica y Parinacota", "nivel": "B", "puntos": 4, "codigo": "720-12-LE26", "nombre": "PAC N°35 S.C. N°230-2026. CONTRATACIÓN PRESTACIÓN DE SERVICIO PARA RETIRO TRANSPORTE Y  DESTRUCCION DE PLAGUICIDAS BAJO LA MODALIDAD DE CONTRATO SUMINISTRO.", "similar_a": "gestión, cadena de retiro", "comuna": "Arica", "organismo": "SERVICIO AGRICOLA Y GANADERO", "tipo": "LE", "monto_estimado": null, "cierre": "2026-10-13T16:00:00", "fin_preguntas": "2026-10-07T15:00:00", "descripcion": "El Servicio Agrícola y Ganadero (SAG) requiere la Contratación de Prestación de Servicio integral para el retiro, transporte seguro y eliminación definitiva (destrucción) de un lote de plaguicidas (en desuso, caducos o decomisados), bajo la modalidad de contrato suministro, garantizando la total ino", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=720-12-LE26", "vial": false, "nueva": false}, {"region": "Arica y Parinacota", "nivel": "B", "puntos": 3, "codigo": "5360-6-LP26", "nombre": "SERVICIO DE EXTRACCION DIARIO DE RESIDUOS Y OTROS", "similar_a": "residuos", "comuna": "Arica", "organismo": "UNIVERSIDAD DE TARAPACA", "tipo": "LP", "monto_estimado": 85000000.0, "cierre": "2026-10-19T16:00:00", "fin_preguntas": "2026-09-30T09:00:00", "descripcion": "Proveer el Servicio Diario Extracción de Basura domiciliaria en los Campus Saucache y Velásquez de la Universidad. Los Proveedores deben contar con vehículo recolector de basura o un camión con baranda y carpa para cubrir la basura por Normativa Municipal, el cual debe tener una capacidad mínima de ", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=5360-6-LP26", "vial": false, "nueva": false}, {"region": "Arica y Parinacota", "nivel": "B", "puntos": 3, "codigo": "2369-84-LR26", "nombre": "PP 21 Servicio de recolección residuos sólidos", "similar_a": "residuos", "comuna": "Arica", "organismo": "I MUNICIPALIDAD DE ARICA", "tipo": "LR", "monto_estimado": null, "cierre": "2026-10-27T16:00:00", "fin_preguntas": "2026-10-02T12:00:00", "descripcion": "La Municipalidad de Arica requiere contratar los servicios de concesión del servicio complementario de recolección y transporte de residuos sólidos domiciliarios, del centyro comercial, borde costero sur y norte, los valles de Azapa, Lluta, Acha y Villa Feontera de la comuna de Arica.", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=2369-84-LR26", "vial": false, "nueva": false}, {"region": "Aysén", "nivel": "C", "puntos": 2, "codigo": "932163-24-LP26", "nombre": "ADQUISICION MAQUINARIA MUNICIPAL PARA LA GESTION DE RESIDUOS SOLIDOS", "similar_a": "residuos", "comuna": "", "organismo": "I MUNICIPALIDAD DE LAGO VERDE", "tipo": "LP", "monto_estimado": 356881000.0, "cierre": "2026-10-16T18:00:00", "fin_preguntas": "2026-10-05T18:00:00", "descripcion": "ADQUISICION MAQUINARIA MUNICIPAL PARA LA GESTION DE RESIDUOS SOLIDOS", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=932163-24-LP26", "vial": false, "nueva": false}, {"region": "Aysén", "nivel": "C", "puntos": 2, "codigo": "932163-25-LP26", "nombre": "ADQUISICION MAQUINARIA MUNICIPAL PARA LA GESTION DE RESIDUOS LIQUIDOS", "similar_a": "residuos", "comuna": "", "organismo": "I MUNICIPALIDAD DE LAGO VERDE", "tipo": "LP", "monto_estimado": 144361000.0, "cierre": "2026-10-19T19:00:00", "fin_preguntas": "2026-10-08T18:00:00", "descripcion": "ADQUISICION MAQUINARIA MUNICIPAL PARA LA GESTION DE RESIDUOS LIQUIDOS", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=932163-25-LP26", "vial": false, "nueva": false}, {"region": "Magallanes", "nivel": "A", "puntos": 5, "codigo": "2355-23-LE26", "nombre": "SERV. LIMPIEZA RETIRO-DISPOSICIÓN FINAL RESIDUOS", "similar_a": "residuos, gestión, cadena de retiro", "comuna": "Punta Arenas", "organismo": "I MUNICIPALIDAD DE PUNTA ARENAS", "tipo": "LE", "monto_estimado": null, "cierre": "2026-10-01T11:00:00", "fin_preguntas": "2026-09-24T15:00:00", "descripcion": "La Municipalidad de Punta Arenas, requiere contratar el SERVICIO DE LIMPIEZA – RETIRO Y DISPOSICIÓN FINAL DE RESIDUOS – PARQUE CHABUNCO – PUNTA ARENAS, por un periodo de 3 (tres) meses.\r \r Para el cumplimiento de lo anterior, se requiere de participantes que aseguren y certifiquen que los servicios ", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=2355-23-LE26", "vial": false, "nueva": false}, {"region": "Magallanes", "nivel": "C", "puntos": 2, "codigo": "1540-106-LE26", "nombre": "SERVICIO DE LAVADO DE PRENDAS CON Y SIN DESECHOS", "similar_a": "residuos", "comuna": "Puerto Natales", "organismo": "SERVICIO DE SALUD MAGALLANES HOSPITAL DE PTO NATALES", "tipo": "LE", "monto_estimado": 50000000.0, "cierre": "2026-10-09T15:00:00", "fin_preguntas": "2026-10-02T12:00:00", "descripcion": "Que, mediante Solicitud de Compra N°326/2026 de Subdirección de Operaciones (S), Manuel Silva Salinas, autorizado por la Subdirección Administrativa, quien solicita el servicio de lavado de prendas con y sin desechos para el Hospital Dr. Augusto Essmann Burgos de Puerto Natales, por un periodo de 12", "link": "https://www.mercadopublico.cl/Procurement/Modules/RFB/DetailsAcquisition.aspx?idlicitacion=1540-106-LE26", "vial": false, "nueva": false}];
+const CONFIG = {"titulo": "Radar de licitaciones", "fecha": "2026-09-30", "fecha_larga": "30-sep-2026", "feedback_a": "", "fecha_antes": null, "regiones": ["Metropolitana", "Biobío", "Maule", "La Araucanía", "Los Ríos", "Los Lagos", "Coquimbo", "Tarapacá", "Arica y Parinacota", "Aysén", "Magallanes"], "grupos": ["REAS / clínicos", "peligrosos", "especiales", "residuos", "insumos", "gestión", "cadena de retiro"]};
+const TIPOS = { L1: 'menos de 100 UTM', LE: '100 a 1.000 UTM', LP: '1.000 a 2.000 UTM', LQ: '2.000 a 5.000 UTM', LR: 'más de 5.000 UTM' };
+const HOY = new Date(); HOY.setHours(0, 0, 0, 0);
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const dias = iso => iso ? Math.round((new Date(iso.slice(0, 10) + 'T00:00:00') - HOY) / 864e5) : null;
+const fecha = iso => { if (!iso) return '—'; const [y, m, d] = iso.slice(0, 10).split('-');
+  return `${+d}-${['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][m - 1]}`; };
+const plata = m => m ? '$' + Math.round(m).toLocaleString('es-CL') : 'Reservado';
+const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+let FB = {};
+try { FB = JSON.parse(localStorage.getItem('radar_fb') || '{}'); } catch (e) { FB = {}; }
+const guardarFB = () => { try { localStorage.setItem('radar_fb', JSON.stringify(FB)); } catch (e) {} };
+
+$('titulo').textContent = CONFIG.titulo;
+document.title = CONFIG.titulo;
+$('sub').textContent = `Actualizado el ${CONFIG.fecha_larga}` + (CONFIG.fecha_antes ? ` · "Nueva" = no estaba en el radar del ${CONFIG.fecha_antes}` : '');
+const abiertas = DATOS.filter(d => dias(d.cierre) === null || dias(d.cierre) >= 0);
+const cuenta = k => abiertas.filter(d => d.nivel === k).length;
+$('resumen').innerHTML = `<span class="pill"><b>${abiertas.length}</b> abiertas</span>` +
+  ['A', 'B', 'C'].map(k => `<span class="pill">Nivel ${k}: <b>${cuenta(k)}</b></span>`).join('') +
+  `<span class="pill"><b>${abiertas.filter(d => d.nueva).length}</b> nuevas</span>`;
+CONFIG.regiones.forEach(r => $('region').insertAdjacentHTML('beforeend', `<option>${esc(r)}</option>`));
+CONFIG.grupos.forEach(g => $('grupo').insertAdjacentHTML('beforeend', `<option>${esc(g)}</option>`));
+
+const niveles = new Set(['A', 'B']);
+document.querySelectorAll('.chip[data-nivel]').forEach(b => b.addEventListener('click', () => {
+  const k = b.dataset.nivel; niveles.has(k) ? niveles.delete(k) : niveles.add(k);
+  b.setAttribute('aria-pressed', niveles.has(k)); pintar();
+}));
+['q', 'region', 'grupo', 'plazo', 'nuevas', 'sinfb', 'orden'].forEach(id => $(id).addEventListener('input', pintar));
+
+function tarjeta(d) {
+  const dd = dias(d.cierre), cerrada = dd !== null && dd < 0;
+  const f = FB[d.codigo] || {};
+  const cats = (d.similar_a || '').split(',').map(s => s.trim()).filter(Boolean)
+    .map(c => `<span class="cat">${esc(c)}</span>`).join('') + (d.vial ? '<span class="cat pen">fuera del foco</span>' : '');
+  const preg = d.fin_preguntas && dias(d.fin_preguntas) >= 0 ? `<span>Preguntas hasta <b>${fecha(d.fin_preguntas)}</b></span>` : '';
+  return `<article class="card${cerrada ? ' cerrada' : ''}" data-codigo="${esc(d.codigo)}">
+    <div class="top"><span class="nivel ${d.nivel}">${d.nivel}</span>${d.nueva ? '<span class="nueva">Nueva</span>' : ''}
+      <a class="codigo" href="${esc(d.link)}" target="_blank" rel="noopener">${esc(d.codigo)}</a>
+      <span class="tipo">${esc(d.tipo || '')}${TIPOS[d.tipo] ? ' · ' + TIPOS[d.tipo] : ''}</span></div>
+    <div class="nombre">${esc(d.nombre)}</div>
+    <div class="donde">${esc(d.organismo)} · ${esc(d.comuna || '')}${d.comuna ? ', ' : ''}${esc(d.region)}</div>
+    <div class="datos">
+      <span class="${!cerrada && dd !== null && dd <= 7 ? 'urgente' : ''}">Cierre <b>${fecha(d.cierre)} ${d.cierre ? d.cierre.slice(11, 16) : ''}</b>
+        ${dd === null ? '' : cerrada ? '(cerrada)' : `(${dd} ${dd === 1 ? 'día' : 'días'})`}</span>
+      ${preg}<span>Monto <b>${plata(d.monto_estimado)}</b></span></div>
+    <div class="cats">${cats}</div>
+    ${d.descripcion ? `<details><summary>Descripción</summary>${esc(d.descripcion)}</details>` : ''}
+    <div class="fb">
+      <button class="si" aria-pressed="${f.v === 'si'}" data-v="si">Me sirve</button>
+      <button class="no" aria-pressed="${f.v === 'no'}" data-v="no">No me sirve</button>
+      <input type="text" placeholder="¿Por qué? (zona, monto, tipo de residuo, plazo…)" value="${esc(f.m || '')}">
+    </div></article>`;
+}
+
+function pintar() {
+  const q = norm($('q').value), reg = $('region').value, gr = $('grupo').value, pl = +$('plazo').value || null;
+  let r = DATOS.filter(d => {
+    const dd = dias(d.cierre);
+    if (dd !== null && dd < 0) return false;
+    if (!niveles.has(d.nivel)) return false;
+    if (reg && d.region !== reg) return false;
+    if (gr && !(d.similar_a || '').split(',').map(s => s.trim()).includes(gr)) return false;
+    if (pl && (dd === null || dd > pl)) return false;
+    if ($('nuevas').checked && !d.nueva) return false;
+    if ($('sinfb').checked && FB[d.codigo]?.v) return false;
+    if (q && !norm([d.codigo, d.nombre, d.organismo, d.comuna, d.region, d.descripcion].join(' ')).includes(q)) return false;
+    return true;
+  });
+  const o = $('orden').value;
+  const porCierre = (a, b) => (a.cierre || '9999').localeCompare(b.cierre || '9999');
+  r.sort(o === 'nivel' ? (a, b) => a.nivel.localeCompare(b.nivel) || porCierre(a, b)
+    : o === 'monto' ? (a, b) => (b.monto_estimado || 0) - (a.monto_estimado || 0)
+    : o === 'region' ? (a, b) => CONFIG.regiones.indexOf(a.region) - CONFIG.regiones.indexOf(b.region) || porCierre(a, b)
+    : porCierre);
+  $('contador').textContent = `${r.length} de ${abiertas.length} abiertas`;
+  $('lista').innerHTML = r.length ? r.map(tarjeta).join('') : '<div class="vacio">Ninguna licitación con estos filtros.</div>';
+  barra();
+}
+
+$('lista').addEventListener('click', e => {
+  const b = e.target.closest('.fb button'); if (!b) return;
+  const c = b.closest('.card').dataset.codigo, f = FB[c] || {};
+  f.v = f.v === b.dataset.v ? null : b.dataset.v; FB[c] = f; guardarFB();
+  b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x.dataset.v === f.v));
+  barra();
+});
+$('lista').addEventListener('input', e => {
+  if (!e.target.matches('.fb input')) return;
+  const c = e.target.closest('.card').dataset.codigo; FB[c] = { ...(FB[c] || {}), m: e.target.value }; guardarFB(); barra();
+});
+
+function textoFB() {
+  const porCod = Object.fromEntries(DATOS.map(d => [d.codigo, d]));
+  return Object.entries(FB).filter(([c, f]) => (f.v || f.m) && porCod[c]).map(([c, f]) =>
+    `${c} — ${f.v === 'si' ? 'ME SIRVE' : f.v === 'no' ? 'NO ME SIRVE' : 'sin marcar'}${f.m ? ': ' + f.m : ''}\n   (${porCod[c].nombre})`).join('\n');
+}
+function barra() {
+  const t = textoFB(), n = t ? t.split('\n').filter(l => !l.startsWith('   ')).length : 0;
+  $('fbcuenta').textContent = n ? `${n} ${n === 1 ? 'respuesta marcada' : 'respuestas marcadas'}` : 'Marca "Me sirve" o "No me sirve" en cada licitación';
+  $('enviar').href = `mailto:${CONFIG.feedback_a}?subject=${encodeURIComponent('Feedback radar ' + CONFIG.fecha_larga)}&body=${encodeURIComponent(t)}`;
+}
+$('copiar').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(textoFB()); $('copiar').textContent = 'Copiado'; }
+  catch (e) { $('copiar').textContent = 'No se pudo copiar'; }
+  setTimeout(() => $('copiar').textContent = 'Copiar respuestas', 2000);
+});
+pintar();
+</script>
+</body>
+</html>
